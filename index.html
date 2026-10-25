@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Handwritten Digit Recognition · PyTorch CNN in the browser</title>
+  <meta name="description" content="A CNN trained in PyTorch on scikit-learn's digits dataset, exported to ONNX and running live in your browser with ONNX Runtime Web.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+
+    <header class="hero">
+      <p class="status" id="status" data-state="loading" role="status" aria-live="polite">
+        <span class="dot" aria-hidden="true"></span><span id="status-text">Loading model…</span>
+      </p>
+      <h1>Handwritten Digit Recognition</h1>
+      <p class="subtitle">PyTorch CNN • Browser Inference</p>
+    </header>
+
+    <section class="stage" aria-label="Digit recognition demo">
+
+      <div class="draw">
+        <div class="pad-wrap">
+          <canvas id="pad" width="560" height="560" aria-label="Drawing area. Draw a digit from 0 to 9 with mouse or touch."></canvas>
+          <p class="hint" id="hint">Draw a digit from 0 to 9</p>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="btn-predict" type="button" disabled>Predict</button>
+          <button class="btn" id="btn-clear" type="button">Clear</button>
+        </div>
+        <p class="message" id="message" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="result" aria-live="polite">
+        <div class="result-top">
+          <div class="digit-box">
+            <div class="digit" id="digit" data-empty="true">–</div>
+            <span class="digit-label">Prediction</span>
+          </div>
+
+          <div class="result-side">
+            <div class="conf">
+              <div class="conf-head">
+                <span class="label">Confidence</span>
+                <span class="conf-val" id="conf-val">—</span>
+              </div>
+              <div class="conf-track"><div class="conf-fill" id="conf-bar"></div></div>
+            </div>
+
+            <div class="seen">
+              <div class="grid8" id="grid" aria-hidden="true"></div>
+              <div class="seen-text">
+                <span class="label">Model input</span>
+                <span class="small">8×8 grayscale, exactly what the network receives</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="probs">
+          <div class="probs-head">
+            <span class="label">Class probabilities</span>
+            <span class="small mono" id="meta"></span>
+          </div>
+          <div class="bars" id="bars"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="about" aria-labelledby="about-title">
+      <h2 id="about-title">About the model</h2>
+
+      <ul class="chips" aria-label="Model facts">
+        <li>8×8 grayscale input</li>
+        <li>10 classes</li>
+        <li>CNN</li>
+        <li>PyTorch</li>
+      </ul>
+
+      <div class="about-grid">
+        <div class="panel">
+          <h3>Architecture</h3>
+          <table class="layers">
+            <tbody>
+              <tr><td>Input</td><td class="mono">1 × 8 × 8</td></tr>
+              <tr><td>Conv 3×3, 16 filters · BatchNorm · ReLU</td><td class="mono">16 × 8 × 8</td></tr>
+              <tr><td>MaxPool 2×2</td><td class="mono">16 × 4 × 4</td></tr>
+              <tr><td>Conv 3×3, 32 filters · BatchNorm · ReLU</td><td class="mono">32 × 4 × 4</td></tr>
+              <tr><td>MaxPool 2×2</td><td class="mono">32 × 2 × 2</td></tr>
+              <tr><td>Flatten</td><td class="mono">128</td></tr>
+              <tr><td>Linear → softmax</td><td class="mono">10</td></tr>
+            </tbody>
+          </table>
+          <dl class="stats">
+            <div><dt>Test accuracy</dt><dd>98.6%<small>355 / 360 held-out images</small></dd></div>
+            <div><dt>Parameters</dt><dd>6,186<small>trainable</small></dd></div>
+            <div><dt>Training data</dt><dd>load_digits<small>1,797 images, pixels ÷ 16</small></dd></div>
+          </dl>
+        </div>
+
+        <div class="panel">
+          <h3>From drawing to prediction</h3>
+          <ol class="steps">
+            <li>Your pen strokes are cropped to their bounding box and centered, so the digit's size and position don't matter.</li>
+            <li>They are redrawn at a fixed pen thickness relative to the digit, then averaged down to an 8×8 grayscale grid.</li>
+            <li>Pixel values are mapped to the dataset's 0–16 scale, then divided by 16, matching training.</li>
+            <li>The ONNX model runs in your browser with ONNX Runtime Web (WebAssembly). Nothing is sent to a server.</li>
+          </ol>
+          <p class="small note">The training images are tiny and centered, so clean, single-stroke digits that fill the pad work best.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>Trained in PyTorch on scikit-learn's digits dataset, exported to ONNX, served as static files.</span>
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
+  <script src="model-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
