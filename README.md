@@ -4,7 +4,7 @@ A CNN trained in PyTorch that recognizes handwritten digits (0–9) **live in yo
 
 ### [▶ Try the live demo](https://shokhruxbeck.github.io/digit-recognizer/)
 
-![Demo screenshot](screenshot.png)
+![Demo screenshot](screenshot.png.png)
 
 ## Results
 
